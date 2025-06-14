@@ -1,0 +1,232 @@
+openapi: 3.0.0
+info:
+  title: 
+  description: 
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+    description: 
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Item:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        quantity:
+          type: integer
+        note:
+          type: string
+        category:
+          type: string
+        purchased:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    ItemCreate:
+      type: object
+      properties:
+        name:
+          type: string
+        quantity:
+          type: integer
+        note:
+          type: string
+        category:
+          type: string
+        purchased:
+          type: boolean
+paths:
+  /items:
+    get:
+      summary: Get a list of all shopping list items
+      tags: [Items]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: name
+          in: query
+          schema: { type: string }
+        - name: category
+          in: query
+          schema: { type: string }
+        - name: purchased
+          in: query
+          schema: { type: boolean }
+        - name: sort_by
+          in: query
+          schema: { type: string, enum: [createdAt, updatedAt] }
+        - name: sort_order
+          in: query
+          schema: { type: string, enum: [asc, desc], default: asc }
+      responses:
+        "200":
+          description: A list of shopping items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Item"
+    post:
+      summary: Add a new shopping list item
+      tags: [Items]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItemCreate"
+      responses:
+        "201":
+          description: Shopping item added successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+  /items/{item_id}:
+    get:
+      summary: Get details of a specific shopping item
+      tags: [Items]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Details of the shopping item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        "404":
+          description: Item not found
+    put:
+      summary: Update a shopping list item
+      tags: [Items]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItemCreate"
+      responses:
+        "200":
+          description: Shopping item updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        "404":
+          description: Item not found
+    delete:
+      summary: Delete a shopping list item
+      tags: [Items]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Item deleted successfully
+        "404":
+          description: Item not found
+  /items/bulk:
+    post:
+      summary: Add multiple shopping list items
+      tags: [Items]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/ItemCreate"
+      responses:
+        "201":
+          description: Items added successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Item"
+  /register:
+    post:
+      summary: Register a new user
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                repeated_password:
+                  type: string
+      responses:
+        "200":
+          description: User registered successfully
+  /login:
+    post:
+      summary: Log in and get JWT token
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Access token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  token_type:
+                    type: string
